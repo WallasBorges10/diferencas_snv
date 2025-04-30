@@ -12,24 +12,41 @@ def process_data(df_old, df_new):
     df_old.columns = df_old.iloc[1]
     df_old = df_old.iloc[2:, :]
     
-    # Concatenando os dataframes
+    # Adicionando coluna de origem para ajudar na ordenação
+    df_new['_origem'] = 'NOVA'
+    df_old['_origem'] = 'ANTIGA'
+    
+    # Concatenando os dataframes (antiga primeiro)
     df = pd.concat([df_old, df_new], axis=0)
-    
-    # Encontrando diferenças
-    df_diff = df[~df.duplicated(keep=False)].sort_values('Código')
-    codigos = df_diff['Código'].drop_duplicates()
-    
-    # Função para agregar diferenças
+     
+    # Função para agregar diferenças mantendo a ordem ANTIGA -> NOVA
     def agrega_diferencas(col):
-        return ' ============> '.join(set(map(str, col)))
-    
+        if col.name == '_origem':
+            # Ordena explicitamente ANTIGA antes de NOVA
+            valores = sorted(col.unique(), key=lambda x: 0 if x == 'ANTIGA' else 1)
+            return ' =====> '.join(valores)
+        else:
+            # Para outras colunas, mantemos a ordem de aparição (ANTIGA primeiro)
+            valores = []
+            seen = set()
+            for v in col:
+                if v not in seen:
+                    seen.add(v)
+                    valores.append(str(v))
+            return ' =====> '.join(valores) if len(valores) > 1 else valores[0]
+       
     # Agrupando por código e agregando diferenças
     df_dif = df.groupby('Código', as_index=False).agg(agrega_diferencas)
+
+    # Encontrando diferenças
+    df_diff = df.iloc[:,:-1][~df.iloc[:,:-1].duplicated(keep=False)].sort_values('Código')
+    codigos = df_diff['Código'].drop_duplicates()
     
     # Filtrando apenas códigos com diferenças
     duplicados = df[df.duplicated('Código', keep=False)]
     diferencas = df_dif[df_dif['Código'].isin(duplicados['Código'].unique())]
     diferencas = diferencas[diferencas['Código'].isin(codigos)]
+    diferencas = diferencas.drop(columns='_origem')
     
     return diferencas
 
@@ -61,8 +78,8 @@ if file_old and file_new:
         st.success('Processamento concluído!')
         
         # Mostrando o resultado
-        st.header('Diferenças Encontradas')
-        st.dataframe(result)       
+        st.header('Diferenças Encontradas (ANTIGA =====> NOVA)')
+        st.dataframe(result)
        
         # Opção para exportar como Excel
         output = BytesIO()
