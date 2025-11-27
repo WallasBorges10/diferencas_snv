@@ -46,5 +46,10 @@ def process_data(df_old, df_new):
     duplicados = df[df.duplicated('Código', keep=False)]
     diferencas = df_dif[df_dif['Código'].isin(duplicados['Código'].unique())]
     diferencas = diferencas[diferencas['Código'].isin(codigos_com_diff)]
+
+    # Arredondar apenas colunas numéricas para 1 casa decimal
+    diferencas = diferencas.apply(
+        lambda col: col.astype(float).round(1) if pd.api.types.is_numeric_dtype(col) else col
     
+
     return diferencas.drop(columns='_origem')
