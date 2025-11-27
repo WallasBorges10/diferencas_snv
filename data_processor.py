@@ -31,6 +31,14 @@ def process_data(df_old, df_new):
     # Preparar os dataframes
     df_old = prepare_dataframe(df_old, 'ANTIGA')
     df_new = prepare_dataframe(df_new, 'NOVA')
+
+    # 🔧 Substituir vírgula por ponto nas colunas numéricas desejadas
+    cols_float = ['km_ini', 'km_fim', 'extensao']
+    for col in cols_float:
+        if col in df_old.columns:
+            df_old[col] = df_old[col].astype(str).str.replace(',', '.')
+        if col in df_new.columns:
+            df_new[col] = df_new[col].astype(str).str.replace(',', '.')
     
     # Concatenar (antiga primeiro)
     df = pd.concat([df_old, df_new], axis=0)
@@ -53,4 +61,5 @@ def process_data(df_old, df_new):
     )
 
     return diferencas.drop(columns='_origem')
+
 
