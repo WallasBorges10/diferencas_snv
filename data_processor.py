@@ -50,6 +50,7 @@ def process_data(df_old, df_new):
     # Arredondar apenas colunas numéricas para 1 casa decimal
     diferencas = diferencas.apply(
         lambda col: col.astype(float).round(1) if pd.api.types.is_numeric_dtype(col) else col
-    
+    )
 
     return diferencas.drop(columns='_origem')
+
