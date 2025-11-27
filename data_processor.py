@@ -25,25 +25,32 @@ def find_differences(group):
     return pd.Series(result)
 
 def normalize_numeric_columns(df, cols):
-    """Converte vírgula para ponto, transforma em float e arredonda."""
+    """
+    Normaliza colunas numéricas:
+    - troca vírgula por ponto
+    - converte para float
+    - arredonda para 1 casa decimal
+    - devolve já com ponto como separador
+    """
     for col in cols:
         if col in df.columns:
             df[col] = (
                 df[col]
                 .astype(str)
-                .str.replace(',', '.', regex=False)   # troca vírgula por ponto
-                .astype(float)
-                .round(1)                            # arredonda para 1 casa
+                .str.replace(',', '.', regex=False)  # vírgula -> ponto
             )
+            # Converte para número e arredonda
+            df[col] = pd.to_numeric(df[col], errors='coerce').round(1)
     return df
 
 def process_data(df_old, df_new):
     """Processa os dataframes e encontra as diferenças"""
+    
     # Preparar os dataframes
     df_old = prepare_dataframe(df_old, 'ANTIGA')
     df_new = prepare_dataframe(df_new, 'NOVA')
 
-    # 🔧 Normalizar colunas numéricas para garantir comparação correta
+    # 🔧 Normalizar colunas com números decimais
     cols_float = ['km_ini', 'km_fim', 'extensao']
     df_old = normalize_numeric_columns(df_old, cols_float)
     df_new = normalize_numeric_columns(df_new, cols_float)
