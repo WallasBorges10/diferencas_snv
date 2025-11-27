@@ -51,7 +51,7 @@ def process_data(df_old, df_new):
     df_new = prepare_dataframe(df_new, 'NOVA')
 
     # 🔧 Normalizar colunas com números decimais
-    cols_float = ['km_ini', 'km_fim', 'extensao']
+    cols_float = ['km inicial', 'km final', 'Extensão']
     df_old = normalize_numeric_columns(df_old, cols_float)
     df_new = normalize_numeric_columns(df_new, cols_float)
 
@@ -71,3 +71,4 @@ def process_data(df_old, df_new):
     diferencas = diferencas[diferencas['Código'].isin(codigos_com_diff)]
 
     return diferencas.drop(columns='_origem')
+
